@@ -20,6 +20,6 @@ public class HallInfoVo implements Serializable {
 
     private String seatFile;
 
-    private String soldSeats;
+    private String soldSeats;      //订单信息中查询
 
 }

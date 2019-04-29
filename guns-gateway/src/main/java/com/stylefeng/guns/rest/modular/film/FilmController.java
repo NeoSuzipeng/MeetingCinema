@@ -20,7 +20,7 @@ import java.util.List;
 public class FilmController {
 
 
-    @Reference(interfaceClass = FilmServiceAPI.class)
+    //@Reference(interfaceClass = FilmServiceAPI.class)
     private FilmServiceAPI filmServiceAPI;
     /**
      * 获取首页信息接口

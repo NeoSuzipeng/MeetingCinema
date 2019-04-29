@@ -14,4 +14,68 @@
         <result column="price" property="price" />
     </resultMap>
 
+
+
+    <resultMap id="filmInfosMap" type="com.stylefeng.guns.api.cinema.vo.FilmInfoVo">
+        <result column="film_id" property="filmId"></result>
+        <result column="film_name" property="filmName"></result>
+        <result column="film_length" property="filmLength"></result>
+        <result column="film_cats" property="filmCats"></result>
+        <result column="film_language" property="filmType"></result>
+        <result column="actors" property="actors"></result>
+        <result column="img_address" property="imgAddress"></result>
+        <collection property="filmFieldVos" ofType="com.stylefeng.guns.api.cinema.vo.FilmFieldVo">
+            <result column="begin_time" property="beginTime"></result>
+            <result column="end_time" property="endTime"></result>
+            <result column="UUID" property="fieldId"></result>
+            <result column="hall_name" property="hallName"></result>
+            <result column="film_language" property="language"></result>
+            <result column="price" property="price"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getFilmInfosByCinemaId" parameterType="java.lang.Integer" resultMap="filmInfosMap">
+        SELECT
+        info.film_id,
+        info.film_name,
+        info.film_length,
+        info.film_cats,
+        info.film_language,
+        info.actors,
+        info.img_address,
+        field.UUID,
+        field.begin_time,
+        field.end_time,
+        field.hall_name,
+        field.price
+        FROM  meet_hall_film_info_t info LEFT JOIN meet_field_t field
+        ON field.film_id = info.film_id
+        AND field.cinema_id = #{cinemaId}
+    </select>
+
+    <select id="getHallInfo" parameterType="java.lang.Integer" resultType="com.stylefeng.guns.api.cinema.vo.HallInfoVo">
+        SELECT
+        field.UUID AS hallFieldId,
+        field.hall_name AS hallName,
+        field.price AS price,
+        hall.seat_address AS seatFile
+        FROM meet_hall_dict_t hall, meet_field_t field
+        WHERE field.hall_id = hall.UUID AND field.UUID=#{fieldId}
+    </select>
+
+    <select id="getFilmInfoByFieldId" parameterType="java.lang.Integer" resultType="com.stylefeng.guns.api.cinema.vo.FilmInfoVo">
+      SELECT
+      field.film_id AS film_id,
+      hall.film_length AS filmLength,
+      hall.film_name AS film_name,
+      hall.film_cats AS filmCats,
+      hall.film_language AS filmType,
+      hall.actors AS actors,
+      hall.img_address AS imgAddress
+      FROM meet_field_t field, meet_hall_film_info_t hall
+      WHERE field.film_id = hall.film_id
+      AND field.UUID = #{fieldId}
+    </select>
+
+
 </mapper>

@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Data
 public class CinemaVo implements Serializable{
 
-    private Integer uuid;
+    private String uuid;
 
     private String cinemaName;
 

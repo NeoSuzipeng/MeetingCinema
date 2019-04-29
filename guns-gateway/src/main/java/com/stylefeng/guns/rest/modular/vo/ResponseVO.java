@@ -89,6 +89,14 @@ public class ResponseVO<T> implements Serializable {
         return responseVO;
     }
 
+    public static<T> ResponseVO Success(int nowPage, int totalPage, T data){
+        ResponseVO responseVO = new ResponseVO();
+        responseVO.setStatus(0);
+        responseVO.setData(data);
+        responseVO.setNowPage(nowPage);
+        responseVO.setTotalPage(totalPage);
+        return responseVO;
+    }
     //分页使用响应对象
     public static<T> ResponseVO Success(int nowPage, int totalPage, T data, String imgPre){
         ResponseVO responseVO = new ResponseVO();
