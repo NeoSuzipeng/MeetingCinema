@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
+import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaConditionResponseVo;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldResponseVo;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldsResponseVo;
@@ -29,6 +30,10 @@ public class CinemaController {
 
     @Reference(interfaceClass = CinemaServiceAPI.class)
     private CinemaServiceAPI cinemaServiceAPI;
+
+
+    @Reference(interfaceClass = OrderServiceAPI.class)
+    private OrderServiceAPI orderServiceAPI;
 
     /**
      * 通过查询条件查询对应影院实体
@@ -111,12 +116,15 @@ public class CinemaController {
             CinemaInfoVo cinemaInfoVo = cinemaServiceAPI.getCinemaInfoById(cinemaId);
             FilmInfoVo filmInfoVo = cinemaServiceAPI.getFilmInfoByFieldId(fieldId);
 
-            //TODO 对接订单
+            //TODO 测试
+            String soldSeats = orderServiceAPI.getSoldSeatByFieldId(fieldId);
+            hallInfoVo.setSoldSeats(soldSeats);
 
             CinemaFieldResponseVo cinemaFieldResponseVo = new CinemaFieldResponseVo();
             cinemaFieldResponseVo.setCinemaInfo(cinemaInfoVo);
             cinemaFieldResponseVo.setFilmInfo(filmInfoVo);
             cinemaFieldResponseVo.setHallInfo(hallInfoVo);
+
 
             return ResponseVO.Success(cinemaFieldResponseVo, Constant.PRE_IMG);
         }catch (Exception e){

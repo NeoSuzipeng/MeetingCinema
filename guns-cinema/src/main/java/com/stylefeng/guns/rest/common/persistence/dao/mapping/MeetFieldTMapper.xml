@@ -65,7 +65,7 @@
 
     <select id="getFilmInfoByFieldId" parameterType="java.lang.Integer" resultType="com.stylefeng.guns.api.cinema.vo.FilmInfoVo">
       SELECT
-      field.film_id AS film_id,
+      field.film_id AS filmId,
       hall.film_length AS filmLength,
       hall.film_name AS film_name,
       hall.film_cats AS filmCats,
@@ -77,5 +77,11 @@
       AND field.UUID = #{fieldId}
     </select>
 
+    <select id="getSeatsByFiledId" parameterType="java.lang.Integer" resultType="java.lang.String">
+      SELECT seat_address AS seatAddress
+      FROM meet_hall_dict_t halldict, meet_field_t field
+      WHERE halldict.UUID =  field.hall_id
+      AND field.UUID = #{fieldId}
+    </select>
 
 </mapper>

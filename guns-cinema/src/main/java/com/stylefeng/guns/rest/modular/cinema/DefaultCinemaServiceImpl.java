@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
-import com.stylefeng.guns.rest.common.persistence.model.MeetAreaDictT;
-import com.stylefeng.guns.rest.common.persistence.model.MeetBrandDictT;
-import com.stylefeng.guns.rest.common.persistence.model.MeetCinemaT;
-import com.stylefeng.guns.rest.common.persistence.model.MeetHallDictT;
+import com.stylefeng.guns.rest.common.persistence.model.*;
 import com.stylefeng.guns.rest.modular.cinema.constant.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -236,5 +233,25 @@ public class DefaultCinemaServiceImpl implements CinemaServiceAPI {
     public FilmInfoVo getFilmInfoByFieldId(int fieldId) {
         FilmInfoVo filmInfoVo = meetFieldTMapper.getFilmInfoByFieldId(fieldId);
         return filmInfoVo;
+    }
+
+
+    /**
+     * 获取对应FieldID的影厅座位定位
+     * @param fieldId
+     * @return
+     */
+    public String getSeatsLocationByFieldId(int fieldId){
+        String seats = meetFieldTMapper.getSeatsByFiledId(fieldId);
+        return seats;
+    }
+
+    @Override
+    public OrderCinemaVo getOrderNeeds(int fieldId) {
+        OrderCinemaVo orderCinemaVo = new OrderCinemaVo();
+        MeetFieldT meetFieldT = meetFieldTMapper.selectById(fieldId);
+        orderCinemaVo.setCinemaId(meetFieldT.getCinemaId());
+        orderCinemaVo.setFilmPrice(meetFieldT.getPrice()+"");
+        return orderCinemaVo;
     }
 }

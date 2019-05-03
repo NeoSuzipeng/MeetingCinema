@@ -24,4 +24,6 @@ public interface MeetFieldTMapper extends BaseMapper<MeetFieldT> {
 
     FilmInfoVo getFilmInfoByFieldId(@Param("fieldId") int fieldId);
 
+    //订单模块使用
+    String getSeatsByFiledId(@Param("fieldId")int fieldId);
 }
