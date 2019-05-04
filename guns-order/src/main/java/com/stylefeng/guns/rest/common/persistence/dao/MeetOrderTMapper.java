@@ -23,4 +23,6 @@ public interface MeetOrderTMapper extends BaseMapper<MeetOrderT> {
     List<OrderVo> getOrderInfoByUserId(@Param("userId") String userId, Page<OrderVo> page);
 
     String getSoldSeatsByFieldId(@Param("fieldId")Integer fieldId);
+
+    int insertOrder(MeetOrderT order);
 }

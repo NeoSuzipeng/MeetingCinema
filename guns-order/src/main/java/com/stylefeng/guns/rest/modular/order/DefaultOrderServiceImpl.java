@@ -14,6 +14,7 @@ import com.stylefeng.guns.rest.common.persistence.dao.MeetOrderTMapper;
 import com.stylefeng.guns.rest.common.persistence.model.MeetOrderT;
 import com.stylefeng.guns.rest.common.util.FTPUtil;
 import com.stylefeng.guns.rest.common.util.UUIDUtil;
+import com.stylefeng.guns.rest.modular.order.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -116,36 +117,48 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
      */
     @Override
     public OrderVo createOrder(Integer fieldId, String soldSeats, String seatsName, Integer userId) {
-        //UUID
-        long uuid = UUIDUtil.getUuid();
 
-        //获取影片信息
-        FilmInfoVo filmInfoVo = cinemaServiceAPI.getFilmInfoByFieldId(fieldId);
-        Integer filmId = Integer.parseInt(filmInfoVo.getFilmId());
-        //获取影院信息
-        OrderCinemaVo orderCinemaVo = cinemaServiceAPI.getOrderNeeds(fieldId);
-        Integer cinemaId = orderCinemaVo.getCinemaId();
-        double filmPrice = Double.parseDouble(orderCinemaVo.getFilmPrice());
-        int totalCounts = soldSeats.split(",").length;
-        double totalPrice = getTotalPrice(totalCounts, filmPrice);
+        //条件1：验证售出的票是否为真
+        String seatsLocation = cinemaServiceAPI.getSeatsLocationByFieldId(fieldId);
+        boolean isTrue = isTrueSeats(soldSeats, fieldId+"", seatsLocation);
+        //条件2：座位是否已销售
+        boolean isNotSold = isNotSoldSeats(fieldId+"", soldSeats);
 
-        MeetOrderT newOrder = new MeetOrderT();
-        newOrder.setUuid(uuid+"");
-        newOrder.setSeatsName(seatsName);
-        newOrder.setSeatsIds(soldSeats);
-        newOrder.setCinemaId(cinemaId);
-        newOrder.setFieldId(fieldId);
-        newOrder.setFilmId(filmId);
-        newOrder.setOrderUser(userId);
-        newOrder.setFilmPrice(filmPrice);
-        newOrder.setOrderPrice(totalPrice);
+        if(isTrue && isNotSold){
+            //UUID
+            long uuid = UUIDUtil.getUuid();
 
-        int effectRows = meetOrderTMapper.insert(newOrder);
-        if (effectRows > 0){
-            OrderVo order = meetOrderTMapper.getOrderInfoById(uuid+"");
-            return order;
+            //获取影片信息
+            FilmInfoVo filmInfoVo = cinemaServiceAPI.getFilmInfoByFieldId(fieldId);
+            Integer filmId = Integer.parseInt(filmInfoVo.getFilmId());
+            //获取影院信息
+            OrderCinemaVo orderCinemaVo = cinemaServiceAPI.getOrderNeeds(fieldId);
+            Integer cinemaId = orderCinemaVo.getCinemaId();
+            double filmPrice = Double.parseDouble(orderCinemaVo.getFilmPrice());
+            int totalCounts = soldSeats.split(",").length;
+            double totalPrice = getTotalPrice(totalCounts, filmPrice);
+
+            MeetOrderT newOrder = new MeetOrderT();
+            newOrder.setUuid(uuid+"");
+            newOrder.setSeatsName(seatsName);
+            newOrder.setSeatsIds(soldSeats);
+            newOrder.setCinemaId(cinemaId);
+            newOrder.setFieldId(fieldId);
+            newOrder.setFilmId(filmId);
+            newOrder.setOrderUser(userId);
+            newOrder.setFilmPrice(filmPrice);
+            newOrder.setOrderPrice(totalPrice);
+
+            int effectRows = meetOrderTMapper.insertOrder(newOrder);
+            if (effectRows > 0){
+                OrderVo order = meetOrderTMapper.getOrderInfoById(uuid+"");
+                return order;
+            }else {
+                log.error("订单插入失败");
+                return null;
+            }
         }else {
-            log.error("订单插入失败");
+            log.info("座位不存在");
             return null;
         }
 
@@ -206,4 +219,32 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
             return soldSeats;
         }
     }
+
+    @Override
+    public OrderVo getOrderInfoById(String orderId) {
+        OrderVo orderVo = meetOrderTMapper.getOrderInfoById(orderId);
+        return orderVo;
+    }
+
+    @Override
+    public boolean paySuccess(String orderId) {
+
+        MeetOrderT meetOrderT = new MeetOrderT();
+        meetOrderT.setUuid(orderId);
+        meetOrderT.setOrderStatus(Constant.PAY_SUCCESS);
+
+        int effectRow = meetOrderTMapper.updateById(meetOrderT);
+        return effectRow >= 1 ? Boolean.TRUE : Boolean.FALSE;
+    }
+
+    @Override
+    public boolean payFail(String orderId) {
+        MeetOrderT meetOrderT = new MeetOrderT();
+        meetOrderT.setUuid(orderId);
+        meetOrderT.setOrderStatus(Constant.PAY_FAIL);
+        int effectRow = meetOrderTMapper.updateById(meetOrderT);
+        return effectRow >= 1 ? Boolean.TRUE : Boolean.FALSE;
+    }
+
+
 }

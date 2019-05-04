@@ -3,6 +3,7 @@ package com.stylefeng.guns.rest.common.persistence.model;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.activerecord.Model;
+import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import java.io.Serializable;
 
@@ -19,7 +20,7 @@ public class MeetOrderT extends Model<MeetOrderT> {
 
     private static final long serialVersionUID = 1L;
 
-    @TableField("UUID")
+    @TableId("UUID")
     private String uuid;
     @TableField("cinema_id")
     private Integer cinemaId;

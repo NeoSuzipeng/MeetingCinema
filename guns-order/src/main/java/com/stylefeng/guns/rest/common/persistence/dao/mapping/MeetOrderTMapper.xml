@@ -63,4 +63,12 @@
         SELECT GROUP_CONCAT(seats_ids) FROM mooc_order_t where field_id=#{fieldId}
     </select>
 
+
+    <insert id="insertOrder" parameterType="com.stylefeng.guns.rest.common.persistence.model.MeetOrderT">
+        INSERT INTO meet_order_t (
+        UUID, cinema_id, field_id, film_id, seats_ids, seats_name, film_price, order_price, order_user
+        )
+        VALUE (#{uuid}, #{cinemaId}, #{fieldId}, #{filmId}, #{seatsIds}, #{seatsName}, #{filmPrice}, #{orderPrice}, #{orderUser})
+    </insert>
+
 </mapper>

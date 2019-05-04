@@ -52,4 +52,25 @@ public interface OrderServiceAPI {
      */
     String getSoldSeatByFieldId(Integer fieldId);
 
+
+    /**
+     * 支付模块：支付前查询订单信息
+     * @param orderId
+     * @return
+     */
+    OrderVo getOrderInfoById(String orderId);
+
+    /**
+     * 支付模块：支付成功后修改订单状态
+     * @param orderId
+     * @return
+     */
+    boolean paySuccess(String orderId);
+
+    /**
+     * 支付模块：支付失败后修改订单状态
+     * @param orderId
+     * @return
+     */
+    boolean payFail(String orderId);
 }
