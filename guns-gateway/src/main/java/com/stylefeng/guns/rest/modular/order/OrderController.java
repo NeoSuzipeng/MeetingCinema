@@ -7,7 +7,6 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.stylefeng.guns.api.alipay.AliPayServiceAPI;
 import com.stylefeng.guns.api.alipay.vo.AliPayInfoVo;
 import com.stylefeng.guns.api.alipay.vo.AliPayResultVo;
-import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVo;
 import com.stylefeng.guns.core.util.ToolUtil;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 /**
  * Created by Su on 2019/4/30.
  * 订单服务后端服务
@@ -30,13 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/order/")
 public class OrderController {
 
-    @Reference(interfaceClass = OrderServiceAPI.class)
+    @Reference(interfaceClass = OrderServiceAPI.class, filter = "tracing", timeout = 5000)
     private OrderServiceAPI orderServiceAPI;
 
-    @Reference(interfaceClass = CinemaServiceAPI.class)
-    private CinemaServiceAPI cinemaServiceAPI;
 
-    @Reference(interfaceClass = AliPayServiceAPI.class)
+    @Reference(interfaceClass = AliPayServiceAPI.class,filter = "tracing", timeout = 5000)
     private AliPayServiceAPI aliPayServiceAPI;
 
     public ResponseVO buyTicketsError(Integer fieldId, String soldSeats, String seatsName){
@@ -99,11 +97,6 @@ public class OrderController {
     }
 
 
-    //TODO 取消订单,并清除已售座位
-
-
-
-
 
     @RequestMapping(value = "getPayInfo", method = RequestMethod.POST)
     public ResponseVO getPayInfo(@RequestParam("orderId")String orderId){
@@ -140,6 +133,21 @@ public class OrderController {
             }
             return ResponseVO.Success(aliPayResultVo);
         }
+    }
+
+    @RequestMapping(value = "cancel", method = RequestMethod.POST)
+    public ResponseVO cancel(@RequestParam("orderId")String orderId){
+        String userId = CurrentUser.getUserId();
+        if (StringUtils.isEmpty(userId)){
+            return ResponseVO.serviceFail("用户未登录");
+        }
+        boolean isSuccess = orderServiceAPI.cancel(userId, orderId);
+        if (isSuccess){
+            return ResponseVO.Success("取消成功");
+        }else{
+            return ResponseVO.serviceFail("取消失败");
+        }
 
     }
+
 }

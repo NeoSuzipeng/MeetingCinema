@@ -18,7 +18,7 @@ import java.util.Date;
  * 用户模块服务提供者
  */
 @Component
-@Service(interfaceClass = UserAPI.class)
+@Service(interfaceClass = UserAPI.class, filter = "tracing")
 public class UserServiceImpl implements UserAPI{
 
     @Autowired

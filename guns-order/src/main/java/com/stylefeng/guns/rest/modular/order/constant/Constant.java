@@ -7,8 +7,11 @@ package com.stylefeng.guns.rest.modular.order.constant;
  */
 public class Constant {
 
-    public static final int PAY_SUCCESS = 1;
 
     public static final int PAY_FAIL = 0;
+
+    public static final int PAY_SUCCESS = 1;
+
+    public static final int PAY_CANCEL = 2;
 
 }

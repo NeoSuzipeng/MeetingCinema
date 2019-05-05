@@ -19,7 +19,7 @@ import java.util.List;
  * Created by Su on 2019/4/27.
  * 影院模块服务实现
  */
-@Service(interfaceClass = CinemaServiceAPI.class)
+@Service(interfaceClass = CinemaServiceAPI.class, filter = "tracing")
 @Component
 public class DefaultCinemaServiceImpl implements CinemaServiceAPI {
 

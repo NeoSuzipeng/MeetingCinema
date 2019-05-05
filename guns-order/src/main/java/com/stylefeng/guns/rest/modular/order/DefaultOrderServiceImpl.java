@@ -30,7 +30,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@Service(interfaceClass = OrderServiceAPI.class)
+@Service(interfaceClass = OrderServiceAPI.class, filter = "tracing")
 public class DefaultOrderServiceImpl implements OrderServiceAPI {
 
     @Autowired
@@ -39,7 +39,7 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
     @Autowired
     private MeetOrderTMapper meetOrderTMapper;
 
-    @Reference(interfaceClass = CinemaServiceAPI.class)
+    @Reference(interfaceClass = CinemaServiceAPI.class, filter = "tracing")
     private CinemaServiceAPI cinemaServiceAPI;
 
     /**
@@ -93,6 +93,7 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
     public boolean isNotSoldSeats(String field, String seats) {
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.eq("field_id", field);
+        entityWrapper.ne("order_status", Constant.PAY_CANCEL);
         List<MeetOrderT> meetOrderTs = meetOrderTMapper.selectList(entityWrapper);
         String[] seatArray = seats.split(",");      //用户选择座位
 
@@ -244,6 +245,24 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
         meetOrderT.setOrderStatus(Constant.PAY_FAIL);
         int effectRow = meetOrderTMapper.updateById(meetOrderT);
         return effectRow >= 1 ? Boolean.TRUE : Boolean.FALSE;
+    }
+
+    @Override
+    public boolean cancel(String userId, String orderId) {
+        MeetOrderT meetOrderT = meetOrderTMapper.selectById(orderId);
+        if (meetOrderT != null){          //无此订单
+            if (userId != null && userId.equals(meetOrderT.getOrderUser()+"")){  //越权检查
+                if (meetOrderT.getOrderStatus() == Constant.PAY_FAIL){         //订单状态检查
+                    MeetOrderT cancelOrder = new MeetOrderT();
+                    cancelOrder.setUuid(orderId);
+                    cancelOrder.setOrderStatus(Constant.PAY_CANCEL);
+                    int effectRows = meetOrderTMapper.updateById(cancelOrder);
+                    return effectRows >= 1 ? Boolean.TRUE : Boolean.FALSE;
+                }
+
+            }
+        }
+        return Boolean.FALSE;
     }
 
 

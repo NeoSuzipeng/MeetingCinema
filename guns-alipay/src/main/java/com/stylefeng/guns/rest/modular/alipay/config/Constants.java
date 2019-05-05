@@ -2,6 +2,7 @@ package com.stylefeng.guns.rest.modular.alipay.config;
 
 /**
  * Created by liuyangkly on 15/7/29.
+ *
  */
 public class Constants {
 
@@ -16,6 +17,7 @@ public class Constants {
 
     public static final Integer PAY_SUCCESS = 1;
     public static final Integer PAY_FAIL = 0;
+    public static final String QR_PATH = "qrcode/";
 
 
 }

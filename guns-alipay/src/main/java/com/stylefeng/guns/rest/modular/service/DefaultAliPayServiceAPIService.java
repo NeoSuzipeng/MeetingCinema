@@ -38,12 +38,12 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@Service(interfaceClass = AliPayServiceAPI.class)
+@Service(interfaceClass = AliPayServiceAPI.class, filter = "tracing")
 public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
 
 
     // 支付宝当面付2.0服务
-    private static AlipayTradeService   tradeService;
+    private static AlipayTradeService tradeService;
 
     // 支付宝当面付2.0服务（集成了交易保障接口逻辑）
     private static AlipayTradeService tradeWithHBService;
@@ -76,7 +76,7 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
     }
 
 
-    @Reference(interfaceClass = OrderServiceAPI.class, check = false)
+    @Reference(interfaceClass = OrderServiceAPI.class, filter = "tracing")
     private OrderServiceAPI orderServiceAPI;
 
 
@@ -187,7 +187,7 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
                     boolean isSuccess = ftpUtil.uploadFile(fileName, qrCodeFile);
                     if (isSuccess) {
                         log.info("二维码上传成功");
-                        qrPath = filePath;
+                        qrPath = Constants.QR_PATH+fileName;
                     }else{
                         log.info("二维码上传失败");
                     }

@@ -20,7 +20,7 @@ import java.util.List;
  */
 
 @Component
-@Service(interfaceClass = FilmServiceAPI.class)
+@Service(interfaceClass = FilmServiceAPI.class, filter = "tracing")
 public class DefaultFilmServiceImpl implements FilmServiceAPI{
 
     @Autowired

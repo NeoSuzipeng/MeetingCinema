@@ -28,11 +28,11 @@ import java.util.List;
 public class CinemaController {
 
 
-    @Reference(interfaceClass = CinemaServiceAPI.class)
+    @Reference(interfaceClass = CinemaServiceAPI.class, filter = "tracing")
     private CinemaServiceAPI cinemaServiceAPI;
 
 
-    @Reference(interfaceClass = OrderServiceAPI.class)
+    @Reference(interfaceClass = OrderServiceAPI.class, filter = "tracing")
     private OrderServiceAPI orderServiceAPI;
 
     /**

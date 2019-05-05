@@ -73,4 +73,13 @@ public interface OrderServiceAPI {
      * @return
      */
     boolean payFail(String orderId);
+
+
+    /**
+     * 支付模块：取消订单
+     * @param userId
+     * @param orderId
+     * @return
+     */
+    boolean cancel(String userId, String orderId);
 }
