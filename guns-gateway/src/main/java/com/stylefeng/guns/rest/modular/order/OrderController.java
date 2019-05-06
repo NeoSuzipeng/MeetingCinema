@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
 
 /**
  * Created by Su on 2019/4/30.
@@ -123,7 +126,7 @@ public class OrderController {
         if (tryNums >= 4){      //重试超过四次
             return ResponseVO.serviceFail("订单支付失败，请稍后重试");
         }else{
-            AliPayResultVo aliPayResultVo = aliPayServiceAPI.getOrderStatus(orderId);
+            AliPayResultVo aliPayResultVo = aliPayServiceAPI.getPaySuccessStatus(orderId);
             if (aliPayResultVo == null || ToolUtil.isEmpty(aliPayResultVo.getOrderId())){
                 AliPayResultVo failOrder = new AliPayResultVo();
                 failOrder.setOrderId(orderId);
@@ -148,6 +151,24 @@ public class OrderController {
             return ResponseVO.serviceFail("取消失败");
         }
 
+    }
+
+    /**
+     * 支付宝回调函数
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "alipay_callback.do")
+    public Object alipayCallBack(HttpServletRequest request){
+        //获取回调请求中的参数
+        Map requestParameters = request.getParameterMap();
+        //调用支付模块的回调处理方法
+        boolean isSuccess = aliPayServiceAPI.alipayCallBack(requestParameters);
+        if (isSuccess){
+            return "success";
+        }else {
+            return "failed";
+        }
     }
 
 }

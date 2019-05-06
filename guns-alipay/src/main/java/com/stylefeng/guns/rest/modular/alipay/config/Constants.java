@@ -19,5 +19,12 @@ public class Constants {
     public static final Integer PAY_FAIL = 0;
     public static final String QR_PATH = "qrcode/";
 
+    //回调常量
+    public static final String TRADE_STATUS_WAIT_BUYER_PAY = "WAIT_BUYER_PAY";
+    public static final String TRADE_STATUS_TRADE_SUCCESS = "TRADE_SUCCESS";
+
+    public static final  String RESPONSE_SUCCESS = "success";
+    public static final  String RESPONSE_FAILED = "failed";
+
 
 }

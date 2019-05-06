@@ -2,6 +2,8 @@ package com.stylefeng.guns.rest.modular.service;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.stylefeng.guns.api.alipay.AliPayServiceAPI;
 import com.stylefeng.guns.api.alipay.vo.AliPayInfoVo;
@@ -24,13 +26,16 @@ import com.stylefeng.guns.rest.modular.alipay.service.impl.AlipayTradeServiceImp
 import com.stylefeng.guns.rest.modular.alipay.service.impl.AlipayTradeWithHBServiceImpl;
 import com.stylefeng.guns.rest.modular.alipay.utils.ZxingUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Su on 2019/5/3.
@@ -95,9 +100,13 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
 
     }
 
+    //TODO 更改接口实现
     @Override
-    public AliPayResultVo getOrderStatus(String orderId) {
-        boolean isSuccess = test_trade_query(orderId);
+    public AliPayResultVo getPaySuccessStatus(String orderId) {
+        boolean isSuccess = false;
+        OrderVo orderVo = orderServiceAPI.getOrderInfoById(orderId);
+        if (orderVo != null && orderVo.getOrderStatus().equals(Constants.PAY_SUCCESS+""))
+            isSuccess = true;
         if (isSuccess) {
             AliPayResultVo aliPayResultVo = new AliPayResultVo();
             aliPayResultVo.setOrderId(orderId);
@@ -108,6 +117,56 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
         return null;
     }
 
+    @Override
+    public boolean alipayCallBack(Map requestParameters) {
+        boolean isSuccess = false;     //回调是够成功
+        Map<String, String> parameters = new HashedMap();
+        for (Iterator iterator = requestParameters.keySet().iterator(); iterator.hasNext();){
+            String name = (String)iterator.next();
+            String[]  values = (String [])requestParameters.get(name);
+            String valueStr = "";
+            for (int i = 0; i < values.length; i++){
+                //拼接技巧
+                valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
+            }
+            parameters.put(name,valueStr);
+        }
+        log.info("支付宝回调，sign:{},trade_status:{},参数:{}",parameters.get("sign"),parameters.get("trade_status"),parameters.toString());
+
+        //验证回调正确性
+        //第一步： 在通知返回参数列表中，除去sign、sign_type两个参数外，凡是通知返回回来的参数皆是待验签的参数
+        parameters.remove("sign_type");
+        //第二步：利用支付宝提供的API进行验签
+        try {
+            boolean alipayRSACheckedV2 = AlipaySignature.rsaCheckV2(parameters, Configs.getAlipayPublicKey(), "utf-8",Configs.getSignType());
+            if(!alipayRSACheckedV2){
+                return isSuccess;
+            }
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
+
+        // 验证数据正确性
+
+        //判断回调是否通过，并给支付宝发送通知
+        log.info("订单状态更新");
+        String orderNo = parameters.get("out_trade_no");
+//        String tradeNo = parameters.get("trade_no");
+        String tradeStatus = parameters.get("trade_status");
+        log.info(tradeStatus);
+        OrderVo orderVo = orderServiceAPI.getOrderInfoById(orderNo);
+        if(orderVo != null){     //存在该订单
+            if (orderVo.getOrderStatus().equals(Constants.PAY_FAIL+"")){//订单为未支付
+                if(Constants.TRADE_STATUS_TRADE_SUCCESS.equals(tradeStatus)){
+                    // 更新订单状态
+                    isSuccess = orderServiceAPI.paySuccess(orderNo);
+                }
+            }
+
+        }
+        return isSuccess;
+    }
+
     // 当面付2.0生成支付二维码
     public String test_trade_precreate(String orderId) {
 
@@ -115,7 +174,7 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
 
         OrderVo orderVo = orderServiceAPI.getOrderInfoById(orderId);
 
-        if (checkOrderAvailableSatus(orderVo)){
+        if (checkOrderAvailableStatus(orderVo)){
             // (必填) 商户网站订单系统中唯一订单号，64个字符以内，只能包含字母、数字、下划线，
             // 需保证商户系统端不能重复，建议通过数据库sequence生成，
             String outTradeNo = orderId;
@@ -168,7 +227,7 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
                     .setUndiscountableAmount(undiscountableAmount).setSellerId(sellerId).setBody(body)
                     .setOperatorId(operatorId).setStoreId(storeId).setExtendParams(extendParams)
                     .setTimeoutExpress(timeoutExpress)
-                    //                .setNotifyUrl("http://www.test-notify-url.com")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
+                                    .setNotifyUrl("http://meeting.natapp1.cc/order/alipay_callback.do")//支付宝服务器主动通知商户服务器里指定的页面http路径,根据需要设置
                     .setGoodsDetailList(goodsDetailList);
 
             AlipayF2FPrecreateResult result = tradeService.tradePrecreate(builder);
@@ -216,7 +275,7 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
      * @param orderVo
      * @return
      */
-    private boolean checkOrderAvailableSatus(OrderVo orderVo){
+    private boolean checkOrderAvailableStatus(OrderVo orderVo){
         boolean isAvailable = false;
         if (orderVo != null && orderVo.getOrderStatus().equals(Constants.PAY_FAIL+"")){
             isAvailable = true;
@@ -227,38 +286,37 @@ public class DefaultAliPayServiceAPIService implements AliPayServiceAPI {
 
 
     //当面付2.0查询订单
-    public boolean test_trade_query(String orderId) {
-
-        boolean isSuccess = false;
-        // (必填) 商户订单号，通过此商户订单号查询当面付的交易状态
-        String outTradeNo = orderId;
-
-        // 创建查询请求builder，设置请求参数
-        AlipayTradeQueryRequestBuilder builder = new AlipayTradeQueryRequestBuilder()
-                .setOutTradeNo(outTradeNo);
-
-        AlipayF2FQueryResult result = tradeService.queryTradeResult(builder);
-        switch (result.getTradeStatus()) {
-            case SUCCESS:
-                log.info("查询返回该订单支付成功: )");
-                //当订单支付成功时，修改订单状态
-                isSuccess = orderServiceAPI.paySuccess(orderId);
-                break;
-
-            case FAILED:
-                log.error("查询返回该订单支付失败或被关闭!!!");
-                break;
-
-            case UNKNOWN:
-                log.error("系统异常，订单支付状态未知!!!");
-                break;
-
-            default:
-                log.error("不支持的交易状态，交易返回异常!!!");
-                break;
-        }
-        return isSuccess;
-    }
-
+//    public boolean test_trade_query(String orderId) {
+//
+//        boolean isSuccess = false;
+//        // (必填) 商户订单号，通过此商户订单号查询当面付的交易状态
+//        String outTradeNo = orderId;
+//
+//        // 创建查询请求builder，设置请求参数
+//        AlipayTradeQueryRequestBuilder builder = new AlipayTradeQueryRequestBuilder()
+//                .setOutTradeNo(outTradeNo);
+//
+//        AlipayF2FQueryResult result = tradeService.queryTradeResult(builder);
+//        switch (result.getTradeStatus()) {
+//            case SUCCESS:
+//                log.info("查询返回该订单支付成功: )");
+//                //当订单支付成功时，修改订单状态
+//                isSuccess = orderServiceAPI.paySuccess(orderId);
+//                break;
+//
+//            case FAILED:
+//                log.error("查询返回该订单支付失败或被关闭!!!");
+//                break;
+//
+//            case UNKNOWN:
+//                log.error("系统异常，订单支付状态未知!!!");
+//                break;
+//
+//            default:
+//                log.error("不支持的交易状态，交易返回异常!!!");
+//                break;
+//        }
+//        return isSuccess;
+//    }
 
 }

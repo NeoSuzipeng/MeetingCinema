@@ -5,6 +5,7 @@ import com.stylefeng.guns.api.cinema.vo.OrderCinemaVo;
 import com.stylefeng.guns.api.order.vo.OrderVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Su on 2019/4/30.
@@ -44,6 +45,13 @@ public interface OrderServiceAPI {
      */
     Page<OrderVo> getOrderByUserId(Integer userId, Page<OrderVo> page);
 
+    /**
+     * 订单模块：取消订单
+     * @param userId
+     * @param orderId
+     * @return
+     */
+    boolean cancel(String userId, String orderId);
 
     /**
      * 影院模块：为影厅提供已售座位信息
@@ -75,11 +83,7 @@ public interface OrderServiceAPI {
     boolean payFail(String orderId);
 
 
-    /**
-     * 支付模块：取消订单
-     * @param userId
-     * @param orderId
-     * @return
-     */
-    boolean cancel(String userId, String orderId);
+    //TODO 更新订单状态
+
+    //TODO 查询订单状态
 }
