@@ -109,7 +109,7 @@ public class CinemaController {
      * @param fieldId
      * @return
      */
-    @RequestMapping(value = "getFieldInfo", method = RequestMethod.GET)
+        @RequestMapping(value = "getFieldInfo", method = RequestMethod.POST)
     public ResponseVO getFieldInfo(Integer cinemaId, Integer fieldId){
         try{
             HallInfoVo hallInfoVo = cinemaServiceAPI.getFilmFieldInfo(fieldId);

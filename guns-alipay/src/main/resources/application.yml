@@ -32,14 +32,14 @@ ftp:
   port: 21
   user-name: ftpuser
   password: 123456
-  upload-path: qrcode
+  upload-path: product/qrcode
 
 spring:
   application:
     name: meeting-alipay
   dubbo:
     server: true
-    registry: zookeeper://localhost:2181
+    registry: zookeeper://106.14.0.93:2181
     protocol:
       name: dubbo
       port: 20885

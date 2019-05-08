@@ -425,10 +425,11 @@ public class DefaultFilmServiceImpl implements FilmServiceAPI{
         String filmStr = meetFilmInfoT.getFilmImgs();
         String[] filmImgs = filmStr.split(",");
         ImgVo imgVo = new ImgVo();
-        imgVo.setImg01(filmImgs[0]); //主图
-        imgVo.setImg02(filmImgs[1]);
-        imgVo.setImg03(filmImgs[2]);
-        imgVo.setImg04(filmImgs[3]);
+        imgVo.setMainImg(filmImgs[0]);
+        imgVo.setImg01(filmImgs[1]); //主图
+        imgVo.setImg02(filmImgs[2]);
+        imgVo.setImg03(filmImgs[3]);
+        imgVo.setImg04(filmImgs[4]);
         return imgVo;
     }
 

@@ -41,7 +41,7 @@ spring:
     name: meeting-order
   dubbo:
     server: true
-    registry: zookeeper://localhost:2181
+    registry: zookeeper://106.14.0.93:2181
     protocol:
       name: dubbo
       port: 20884

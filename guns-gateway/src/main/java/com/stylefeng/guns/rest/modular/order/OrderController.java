@@ -131,7 +131,7 @@ public class OrderController {
                 AliPayResultVo failOrder = new AliPayResultVo();
                 failOrder.setOrderId(orderId);
                 failOrder.setOrderStatus(0);
-                failOrder.setOrderMsg("支付失败");
+                failOrder.setOrderMsg("支付中");
                 return ResponseVO.Success(failOrder);
             }
             return ResponseVO.Success(aliPayResultVo);

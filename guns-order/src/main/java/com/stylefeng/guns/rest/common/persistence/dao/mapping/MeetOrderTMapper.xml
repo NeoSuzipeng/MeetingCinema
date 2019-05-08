@@ -60,7 +60,7 @@
     </select>
 
     <select id="getSoldSeatsByFieldId" parameterType="java.lang.Integer" resultType="java.lang.String">
-        SELECT GROUP_CONCAT(seats_ids) FROM mooc_order_t where field_id=#{fieldId}
+        SELECT GROUP_CONCAT(seats_ids) FROM meet_order_t where order_status <![CDATA[!= ]]> 2 AND field_id=#{fieldId}
     </select>
 
 
